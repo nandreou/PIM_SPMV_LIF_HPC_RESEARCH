@@ -1,0 +1,16 @@
+BIN_HOST=lif1d
+BIN_DPU=dpu
+
+TYPE=FP64
+NR_TASKELTS=16
+NR_DPUS=64
+BLNC_TSKLT_ROW=1
+BLNC_TSKLT_NNZ=0
+
+all: ${BIN_DPU} ${BIN_HOST}
+
+${BIN_DPU} : dpu.c
+	dpu-clang -O2 -DNR_TASKLETS=${NR_TASKELTS} -DFP64 -o $@ $^
+
+${BIN_HOST} : lif1d.c matrix.c 
+	clang -O3 -DFP64 `dpu-pkg-config --cflags --libs dpu` -D${TYPE} -DNR_TASKLETS=${NR_TASKELTS} -DNR_DPUS=${NR_DPUS} -DBLNC_TSKLT_ROW=${BLNC_TSKLT_ROW} -DBLNC_TSKLT_NNZ=${BLNC_TSKLT_NNZ} -o $@ $^
